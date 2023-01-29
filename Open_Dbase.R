@@ -3,7 +3,7 @@ library(tidyr)
 library(lubridate)
 # list of names for the features
 labels <- c("Date", "Time","Global_act_pow", "Global_react_pow","Voltage",
-            "Global_intensity", "Sub_KWH_1", "Sub_KWh_2", "Sub_KWh_3")
+            "Global_intensity", "Sub_KWh_1", "Sub_KWh_2", "Sub_KWh_3")
 OpenDB <- function(mydir = "", file = "household_power_consumption.txt"){
   
   full_path <- paste0(mydir, file)
@@ -15,17 +15,20 @@ OpenDB <- function(mydir = "", file = "household_power_consumption.txt"){
   if(!is.data.frame(db)){
     db <- as.data.frame(db) }
   
-  #transform the column Date from character do Date
-  db$Date <- as.Date(parse_date_time(db$Date, "dmy"))
+  #select a variable "time" to store the value of the date and time
+  time <- parse_date_time(paste(db$Date,db$Time), "dmy_HMS", tz = "")
+
   #subset the database
-  sub_db <- subset(db, Date >= "2007-02-01" & Date <= "2007-02-02", rownames = FALSE)
-  #also need to transform the time column from character to time
-  sub_db$Time <- parse_date_time(sub_db$Time, "HMS")
+  sub_db <- subset(db, time >= "2007-01-31 23:30:00" & time <= "2007-02-03 00:01:00", rownames = FALSE)
+
+  #transform the column Date from character do Date
+  sub_db$Date <- as.Date(parse_date_time(sub_db$Date, "dmy"))
+ 
   #save the subset dataframe to be read next time we need to use it saving time 
   #and memory space
   rownames(sub_db) <- 1: nrow(sub_db)
   write.csv(sub_db, "sub_db.csv")
-  rm(db)
+  rm(db, DB)
   sub_db
 }
 
